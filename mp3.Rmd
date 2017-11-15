@@ -5,26 +5,26 @@ date: "November 15, 2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+library(mdsr)
+library(RMySQL)
 ```
 
-## R Markdown
+```{r}
+db <- dbConnect_scidb(dbname = "imdb")
+sequel_info <- db %>%
+  dbGetQuery("SELECT ml.movie_id, t.title, ml.id, ml.linked_movie_id, t2.title AS sequel_title
+FROM movie_link ml
+JOIN title t ON t.id = ml.movie_id
+JOIN title t2 ON t2.id = ml.linked_movie_id 
+WHERE ml.link_type_id = 2
+	AND t.kind_id = 1;
+")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+sequel_info %>% 
+  group_by(title) %>% 
+  filter(!(title %in% sequel_title)) %>% 
+  summarize(num_sequels = n_distinct(sequel_title)) %>% 
+  arrange(desc(num_sequels))
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
