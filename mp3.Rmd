@@ -12,19 +12,67 @@ library(RMySQL)
 
 ```{r}
 db <- dbConnect_scidb(dbname = "imdb")
+
 sequel_info <- db %>%
-  dbGetQuery("SELECT ml.movie_id, t.title, ml.id, ml.linked_movie_id, t2.title AS sequel_title
+  dbGetQuery("SELECT ml.movie_id, t.title, mi.info AS original_runtime, ml.linked_movie_id, t2.title AS sequel_title, mi2.info AS sequel_runtime
 FROM movie_link ml
 JOIN title t ON t.id = ml.movie_id
 JOIN title t2 ON t2.id = ml.linked_movie_id 
+JOIN movie_info mi ON mi.movie_id = ml.movie_id
+JOIN movie_info mi2 ON mi2.movie_id = ml.linked_movie_id
 WHERE ml.link_type_id = 2
-	AND t.kind_id = 1;
+	AND t.kind_id = 1
+  AND mi.info_type_id = 1 
+  AND mi2.info_type_id = 1
+  AND mi.info > 89
+  AND mi2.info > 89;
 ")
+year <- db %>%
+  dbGetQuery('SELECT id, production_year
+              FROM title;')
 
-sequel_info %>% 
-  group_by(title) %>% 
+
+sequel_info <- sequel_info %>% 
+  left_join(year, by = c('movie_id' = 'id')) %>% 
+  rename(original_year = production_year) %>% 
+  left_join(year, by = c('linked_movie_id' = 'id')) %>% 
+  rename(sequel_year = production_year)
+
+gross <- db %>% 
+  dbGetQuery('SELECT mi.movie_id, mi.info AS gross
+             FROM movie_info mi
+             WHERE mi.info_type_id = 107;
+             ') %>% 
+  filter(grepl('\\$', gross)) %>% 
+  filter(grepl('\\(USA)', gross)) %>% 
+  mutate(gross = gsub('\\s.*', '', gross)) %>%
+  mutate(gross = gsub('\\D', '', gross)) %>%
+  mutate(gross = as.numeric(gross)) %>%
+  group_by(movie_id) %>% 
+  summarize(max_gross = max(gross)) %>% 
+  arrange(desc(max_gross))
+
+#Add decade for faceting?
+pop_seq <- sequel_info %>%
+  select(movie_id, title, original_year, sequel_title, sequel_year) %>% 
   filter(!(title %in% sequel_title)) %>% 
-  summarize(num_sequels = n_distinct(sequel_title)) %>% 
-  arrange(desc(num_sequels))
+  left_join(gross, movie_id = movie_id) %>% 
+  filter(max_gross > 1436122) %>% 
+  arrange(desc(max_gross)) %>% 
+  unique() %>% 
+  head(198) %>%
+  mutate(title = reorder(title, original_year))
 
 ```
+
+```{r}
+#More ideas: plot time between sequels for movies in each decade, plot number of sequels based on decade?
+ggplot(pop_seq, aes(x = title, y = original_year)) +
+  geom_segment(aes(xend = title, yend = sequel_year, color = title)) +
+  geom_point(size = 0.1, alpha = 0.5) +
+  geom_point(aes(x = title, y = sequel_year), size = 0.1, alpha = 0.5) +
+  theme(axis.text.x = element_text(angle=90, hjust = 1, vjust=0.5, size= 4),
+        legend.position="none") +
+  scale_y_continuous(limits = c(1930, 2020))
+```
+
