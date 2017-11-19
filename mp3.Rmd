@@ -85,7 +85,7 @@ top_movies_decade <- sequel_info %>%
 
 #Calculates popular sequels
 pop_seq <- sequel_info %>% 
-  filter(title %in% top_movies_decade$title) %>% 
+  filter(title %in% top_movies_decade$title & !is.na(max_gross)) %>% 
   select(decade, title, original_year, sequel_title, sequel_year, link_type_id) %>% 
   mutate(title = reorder(title, original_year))
 
