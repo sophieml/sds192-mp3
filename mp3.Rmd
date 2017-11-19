@@ -102,9 +102,9 @@ pop_seq <- sequel_info %>%
 ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
   geom_point(size = 3) +
-  geom_point(data = subset(new_pop_seq, link_type_id == 2), aes(x = sequel_year, y = title), fill = 'white', shape = 21, size = 3) +
-  geom_point(data = subset(new_pop_seq, link_type_id == 4), aes(x = sequel_year, y = title), fill = 'white', shape = 22, size = 2.9) +
-  geom_point(data = subset(new_pop_seq, link_type_id == 12), aes(x = sequel_year, y = title),fill = 'white', shape = 24, size = 2.5) +
+  geom_point(data = subset(pop_seq, link_type_id == 2), aes(x = sequel_year, y = title), fill = 'white', shape = 21, size = 3) +
+  geom_point(data = subset(pop_seq, link_type_id == 4), aes(x = sequel_year, y = title), fill = 'white', shape = 22, size = 2.9) +
+  geom_point(data = subset(pop_seq, link_type_id == 12), aes(x = sequel_year, y = title),fill = 'white', shape = 24, size = 2.5) +
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9)) +
   # scale_shape_manual(values = c('Sequel' = 21, 'Remake' = 22, 'Spinoff' = 24)) +
