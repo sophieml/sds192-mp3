@@ -13,31 +13,31 @@ library(RMySQL)
 ```{r}
 db <- dbConnect_scidb(dbname = "imdb")
 
+#Gets info on sequels, remakes, and spinoffs
 sequel_info <- db %>%
-  dbGetQuery("SELECT ml.movie_id, t.title, mi.info AS original_runtime, ml.linked_movie_id, t2.title AS sequel_title, mi2.info AS sequel_runtime
+  dbGetQuery("SELECT ml.movie_id, t.title, mi.info AS original_runtime, ml.linked_movie_id AS sequel_id, t2.title AS sequel_title, mi2.info AS sequel_runtime, ml.link_type_id
 FROM movie_link ml
 JOIN title t ON t.id = ml.movie_id
-JOIN title t2 ON t2.id = ml.linked_movie_id 
+JOIN title t2 ON t2.id = linked_movie_id
+JOIN title t3 ON t3.id = ml.movie_id
 JOIN movie_info mi ON mi.movie_id = ml.movie_id
 JOIN movie_info mi2 ON mi2.movie_id = ml.linked_movie_id
-WHERE ml.link_type_id = 2
+WHERE ml.link_type_id IN (2, 4, 12)
 	AND t.kind_id = 1
   AND mi.info_type_id = 1 
   AND mi2.info_type_id = 1
   AND mi.info > 89
   AND mi2.info > 89;
 ")
+```
+
+```{r}
+#gets year of movies
 year <- db %>%
   dbGetQuery('SELECT id, production_year
               FROM title;')
 
-
-sequel_info <- sequel_info %>% 
-  left_join(year, by = c('movie_id' = 'id')) %>% 
-  rename(original_year = production_year) %>% 
-  left_join(year, by = c('linked_movie_id' = 'id')) %>% 
-  rename(sequel_year = production_year)
-
+#gets gross of movies
 gross <- db %>% 
   dbGetQuery('SELECT mi.movie_id, mi.info AS gross
              FROM movie_info mi
@@ -52,27 +52,64 @@ gross <- db %>%
   summarize(max_gross = max(gross)) %>% 
   arrange(desc(max_gross))
 
-#Add decade for faceting?
-pop_seq <- sequel_info %>%
-  select(movie_id, title, original_year, sequel_title, sequel_year) %>% 
+#joins sequels w/ years
+sequel_info <- sequel_info %>% 
+  left_join(year, by = c('movie_id' = 'id')) %>% 
+  rename(original_year = production_year) %>% 
+  left_join(year, by = c('sequel_id' = 'id')) %>% 
+  rename(sequel_year = production_year)
+
+#filters for duplicates (so only original movie shows up, w/ sequels linking to it)
+#adds decade column
+sequel_info <- sequel_info %>% 
   filter(!(title %in% sequel_title)) %>% 
+  mutate(decade = 10 * floor(original_year / 10)) %>% 
+  select(movie_id, title, original_year, decade, sequel_title, sequel_year, link_type_id) %>%
   left_join(gross, movie_id = movie_id) %>% 
-  filter(max_gross > 1436122) %>% 
-  arrange(desc(max_gross)) %>% 
-  unique() %>% 
-  head(198) %>%
+  unique()
+
+#Function that finds top 10 grossing movies
+top10 <- function(data) {
+  data %>%
+    group_by(title) %>%
+    summarize(top_movies = max(max_gross)) %>%
+    arrange(desc(top_movies)) %>%
+    head(10)
+}
+
+#Finds top 10 grossing movies per decade
+top_movies_decade <- sequel_info %>% 
+  filter(!is.na(max_gross)) %>% 
+  group_by(decade) %>%
+  do(top10(.))
+
+#Calculates popular sequels
+pop_seq <- sequel_info %>% 
+  filter(title %in% top_movies_decade$title) %>% 
+  select(decade, title, original_year, sequel_title, sequel_year, link_type_id) %>% 
   mutate(title = reorder(title, original_year))
 
 ```
 
-```{r}
+```{r, fig.height=15, fig.width=20}
 #More ideas: plot time between sequels for movies in each decade, plot number of sequels based on decade?
-ggplot(pop_seq, aes(x = title, y = original_year)) +
-  geom_segment(aes(xend = title, yend = sequel_year, color = title)) +
-  geom_point(size = 0.1, alpha = 0.5) +
-  geom_point(aes(x = title, y = sequel_year), size = 0.1, alpha = 0.5) +
-  theme(axis.text.x = element_text(angle=90, hjust = 1, vjust=0.5, size= 4),
-        legend.position="none") +
-  scale_y_continuous(limits = c(1930, 2020))
+#Plot sequel gross and movie gross over time?
+#Plot ratio of sequels/total movies over time? (could need more SQL queries idk)
+#Idk whatevers cool
+
+#Figure out how to add a legend (ggplot is stupid)
+#Black circle is original movie, white circle is sequel, white square is remake, white triangle is spinoff
+ggplot(pop_seq, aes(x = original_year, y = title)) +
+  geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
+  geom_point(size = 3) +
+  geom_point(data = subset(new_pop_seq, link_type_id == 2), aes(x = sequel_year, y = title), fill = 'white', shape = 21, size = 3) +
+  geom_point(data = subset(new_pop_seq, link_type_id == 4), aes(x = sequel_year, y = title), fill = 'white', shape = 22, size = 2.9) +
+  geom_point(data = subset(new_pop_seq, link_type_id == 12), aes(x = sequel_year, y = title),fill = 'white', shape = 24, size = 2.5) +
+  theme(axis.text.x = element_text(size= 9),
+        axis.text.y = element_text(size = 9)) +
+  # scale_shape_manual(values = c('Sequel' = 21, 'Remake' = 22, 'Spinoff' = 24)) +
+  scale_y_discrete(labels = scales::wrap_format(40)) +
+  scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
+  facet_wrap( ~ decade, nrow = 5, scales = 'free_y')
 ```
 
