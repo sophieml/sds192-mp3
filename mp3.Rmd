@@ -104,6 +104,7 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
   geom_point(size = 3) +
   geom_point(aes(x = sequel_year, y = title, color = link_type_id), size = 3) +
+  labs(color = 'Type of Movie')+
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9)) +
   scale_shape_discrete(name = 'Hello', labels = c('Sequel', 'Remake', 'Spin-off')) +
