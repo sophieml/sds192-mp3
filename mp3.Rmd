@@ -108,7 +108,11 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9),
         plot.title = element_text(size = 28),
-        strip.text.x = element_text(size = 14)) +
+        strip.text.x = element_text(size = 14),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size= 14),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20)) +
   scale_color_discrete(labels = c('Sequel', 'Remake', 'Spin-off')) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
