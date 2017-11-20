@@ -87,7 +87,8 @@ top_movies_decade <- sequel_info %>%
 pop_seq <- sequel_info %>% 
   filter(title %in% top_movies_decade$title & !is.na(max_gross)) %>% 
   select(decade, title, original_year, sequel_title, sequel_year, link_type_id) %>% 
-  mutate(title = reorder(title, original_year))
+  mutate(title = reorder(title, original_year)) %>% 
+  mutate(link_type_id = factor(link_type_id))
 
 ```
 
@@ -102,16 +103,12 @@ pop_seq <- sequel_info %>%
 ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
   geom_point(size = 3) +
-  geom_point(data = subset(pop_seq, link_type_id == 2), aes(x = sequel_year, y = title), fill = 'white', shape = 21, size = 3) +
-  geom_point(data = subset(pop_seq, link_type_id == 4), aes(x = sequel_year, y = title), fill = 'white', shape = 22, size = 2.9) +
-  geom_point(data = subset(pop_seq, link_type_id == 12), aes(x = sequel_year, y = title),fill = 'white', shape = 24, size = 2.5) +
+  geom_point(aes(x = sequel_year, y = title, color = link_type_id), size = 3) +
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9)) +
-  # scale_shape_manual(values = c('Sequel' = 21, 'Remake' = 22, 'Spinoff' = 24)) +
+  scale_shape_discrete(name = 'Hello', labels = c('Sequel', 'Remake', 'Spin-off')) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
-  facet_wrap( ~ decade, nrow = 5, scales = 'free_y') #+
-  #legend("topright", legend = c('Sequel', 'Remake', 'Spinoff'),
-   #      pch = c(21, 22, 24))
+  facet_wrap( ~ decade, nrow = 5, scales = 'free_y')
 ```
 
