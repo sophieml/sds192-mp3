@@ -107,7 +107,7 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   labs(color = 'Type of Movie')+
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9)) +
-  scale_shape_discrete(name = 'Hello', labels = c('Sequel', 'Remake', 'Spin-off')) +
+  scale_color_discrete(labels = c('Sequel', 'Remake', 'Spin-off')) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
   facet_wrap( ~ decade, nrow = 5, scales = 'free_y')
