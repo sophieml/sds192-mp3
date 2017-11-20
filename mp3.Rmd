@@ -104,13 +104,14 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
   geom_point(size = 3) +
   geom_point(aes(x = sequel_year, y = title, color = link_type_id), size = 3) +
-  labs(color = 'Type of Movie', title = "Sequels/Remakes/Spinoffs Produced by Decade", x = "Release Year of Original Movie", y = "Movie Title")+
+  labs(color = 'Type of Movie', title = "Sequels/Remakes/Spinoffs Produced by Decade", x = "Release Year of Original Movie", y = "Movie Title") +
   theme(axis.text.x = element_text(size= 9),
         axis.text.y = element_text(size = 9),
-        plot.title = element_text(size = 28)) +
+        plot.title = element_text(size = 28),
+        strip.text.x = element_text(size = 14)) +
   scale_color_discrete(labels = c('Sequel', 'Remake', 'Spin-off')) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
-  facet_wrap( ~ decade, nrow = 5, scales = 'free_y')
+  facet_wrap( ~ decade, nrow = 5, scales = 'free_y') 
 ```
 
