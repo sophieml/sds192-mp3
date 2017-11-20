@@ -110,6 +110,8 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   # scale_shape_manual(values = c('Sequel' = 21, 'Remake' = 22, 'Spinoff' = 24)) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
-  facet_wrap( ~ decade, nrow = 5, scales = 'free_y')
+  facet_wrap( ~ decade, nrow = 5, scales = 'free_y') #+
+  #legend("topright", legend = c('Sequel', 'Remake', 'Spinoff'),
+   #      pch = c(21, 22, 24))
 ```
 
