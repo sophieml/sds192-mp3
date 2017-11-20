@@ -105,8 +105,8 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_point(size = 3) +
   geom_point(aes(x = sequel_year, y = title, color = link_type_id), size = 3) +
   labs(color = 'Type of Movie', title = "Sequels/Remakes/Spinoffs Produced by Decade", x = "Release Year of Original Movie", y = "Movie Title") +
-  theme(axis.text.x = element_text(size= 9),
-        axis.text.y = element_text(size = 9),
+  theme(axis.text.x = element_text(size= 15),
+        axis.text.y = element_text(size = 11),
         plot.title = element_text(size = 28),
         strip.text.x = element_text(size = 14),
         legend.title = element_text(size = 16),
