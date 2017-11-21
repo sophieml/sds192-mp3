@@ -7,7 +7,7 @@ output: html_document
 #The Popularity of Sequels Over the Decades
 ##Using SQL and the imdb database
 
-As the holidays roll in, movie trailers become ubiquitious, advertising to many families who include a visit to their nearby theaters as a seasonal tradition. Normally the setlist of films include a rom-com, a holiday themed comedy, a and some variation of a sequel. The question we look to answer with our data is: Have the frequency of sequels/remakes/spinoffs increased over the decades? 
+As the holidays roll in, movie trailers become ubiquitious, advertising to many families who include a visit to their nearby theaters as a seasonal tradition. Normally the setlist of films includes a rom-com, a holiday themed comedy, and some variation of a sequel. The question we look to answer with our data is: Have the frequency of sequels/remakes/spinoffs increased over the decades?
 ```{r}
 library(mdsr)
 library(RMySQL)
@@ -96,6 +96,8 @@ pop_seq <- sequel_info %>%
 
 ```
 
+
+For our graphic below, we found the the top ten grossing movies per decade, and joined with the movie_link data to see if they had sequels. Our movies are grouped by the decade of the original movies' release dates, which is indicated by the black dot at the start of each line segment. The seqential dots on the line segments represent the follow up movies, which are color coded by whether they are a sequel, remake, or spinoff. 
 ```{r, fig.height=15, fig.width=20}
 #More ideas: plot time between sequels for movies in each decade, plot number of sequels based on decade?
 #Plot sequel gross and movie gross over time?
@@ -122,4 +124,7 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
   facet_wrap( ~ decade, nrow = 5, scales = "free_y") 
 ```
+
+When creating the graphic, we assumed that movies released more recently would not have as much data, but in fact, the segments for movies released in the 21st century are shorter, but the total of dots is about the same as other decades. The means that movies released more recently have about the same amount of follow ups as other decades, but the amount of follow ups was produced in less time. 
+
 
