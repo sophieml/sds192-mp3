@@ -125,6 +125,6 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   facet_wrap( ~ decade, nrow = 5, scales = "free_y") 
 ```
 
-When creating the graphic, we assumed that movies released more recently would not have as much data, but in fact, the segments for movies released in the 21st century are shorter, but the total of dots is about the same as other decades. The means that movies released more recently have about the same amount of follow ups as other decades, but the amount of follow ups was produced in less time. 
+When creating the graphic, we assumed that movies released more recently would not have as much sequel data, but in fact, although the segments for movies released in the 21st century are shorter, the total of follow up dots is about the same as other decades. The means that movies released more recently have about the same amount of follow ups as other decades, but the amount of follow ups was produced in less time. 
 
 
