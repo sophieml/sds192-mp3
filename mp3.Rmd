@@ -4,11 +4,15 @@ author: "Sophie Li, Rocio Jaime"
 date: "November 15, 2017"
 output: html_document
 ---
+#The Popularity of Sequels Over the Decades
+##Using SQL and the imdb database
 
+As the holidays roll in, movie trailers become ubiquitious, advertising to many families who include a visit to their nearby theaters as a seasonal tradition. Normally the setlist of films include a rom-com, a holiday themed comedy, a and some variation of a sequel. The question we look to answer with our data is: Have the frequency of sequels/remakes/spinoffs increased over the decades? 
 ```{r}
 library(mdsr)
 library(RMySQL)
 ```
+
 
 ```{r}
 db <- dbConnect_scidb(dbname = "imdb")
@@ -116,6 +120,6 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   scale_color_discrete(labels = c('Sequel', 'Remake', 'Spin-off')) +
   scale_y_discrete(labels = scales::wrap_format(40)) +
   scale_x_continuous(limits = c(1910, 2020), expand = c(0, 0)) +
-  facet_wrap( ~ decade, nrow = 5, scales = 'free_y') 
+  facet_wrap( ~ decade, nrow = 5, scales = "free_y") 
 ```
 
