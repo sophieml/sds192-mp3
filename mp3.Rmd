@@ -97,7 +97,7 @@ pop_seq <- sequel_info %>%
 ```
 
 
-For our graphic below, we found the the top ten grossing movies per decade, and joined with the movie_link data to see if they had sequels. Our movies are grouped by the decade of the original movies' release dates, which is indicated by the black dot at the start of each line segment. The seqential dots on the line segments represent the follow up movies, which are color coded by whether they are a sequel, remake, or spinoff. 
+For our graphic below, we found the the top ten grossing movies per decade, and joined with the movie_link data to see if they had follow up films. Our movies are grouped by the decade of the original movies' release dates, which is indicated by the black dot at the start of each line segment. The seqential dots on the line segments represent the follow up movies, which are color coded by whether they are a sequel, remake, or spinoff. 
 ```{r, fig.height=15, fig.width=20}
 #More ideas: plot time between sequels for movies in each decade, plot number of sequels based on decade?
 #Plot sequel gross and movie gross over time?
@@ -125,6 +125,8 @@ ggplot(pop_seq, aes(x = original_year, y = title)) +
   facet_wrap( ~ decade, nrow = 5, scales = "free_y") 
 ```
 
-When creating the graphic, we assumed that movies released more recently would not have as much sequel data, but in fact, although the segments for movies released in the 21st century are shorter, the total of follow up dots is about the same as previous decades. This means that movies released more recently have about the same amount of follow ups as other decades, but the amount of follow ups was produced in less time, meaning sequels/follow ups are becoming more frequent.
+When creating the graphic, we assumed that movies released more recently would not have as much sequel data, but in fact, although the segments for movies released in the 21st century are shorter, the total of follow up dots is about the same as previous decades. This means that movies released more recently have about the same amount of follow ups as other decades, but the amount of follow ups was produced in less time, meaning sequels/follow ups are becoming more frequent.This is very possibly due to money. When an original movie is well executed, members of the audience are more likely to become invested in the plot and characters, and eventually a fandom forms. If there is a large fandom for a specific film, producers can assume that a sequel for a film will have a strong turn out, bringing in more money for the franchise.It's an easy way for film makers to make money; instead of producing brand new ideas, they can build off a story that is already popular.
 
+Another possible explanation for the increasing frequency of sequels could be the increased popularization of adaptations of books to movies. The 2000s is when we find adaptations of Harry Potter, Lord of the Rings, The Chronicles of Narnia, and the Hunger Games, all of which are series. So these multiple, consecutive sequels aren't necessarily due to a lack of creativity, but because each book in a series gets to have it's own movie. This is also sensible on the producers' parts, because if an entire book series were put into one singular movie, they would have to chose between detail or length, and they would lose potential money by not having the audience pay to see separate movies.
 
+Another possible reason to explain the trend in follow up films is the 
