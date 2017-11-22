@@ -8,22 +8,21 @@ output: html_document
 ##Using SQL and the imdb database
 
 As the holidays roll in, movie trailers become ubiquitious, advertising to many families who include a visit to their nearby theaters as a seasonal tradition. Normally the setlist of films includes a rom-com, a holiday themed comedy, and some variation of a sequel. The question we look to answer with our data is: Have the frequency of sequels/remakes/spinoffs increased over the decades?
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(mdsr)
 library(RMySQL)
 ```
-
-
+First, we wrote an SQL query to get all movies (at least 90 minutes long, to account for cartoon shorts classified as 'movies') with sequels, remakes, or spinoffs. We chose to not look at reboots, as the IMDB database considered any movie based on any previous media (including books and plays) as a 'reboot'. 
 ```{r}
 db <- dbConnect_scidb(dbname = "imdb")
 
 #Gets info on sequels, remakes, and spinoffs
+#Uses indexes on type_ids
 sequel_info <- db %>%
-  dbGetQuery("SELECT ml.movie_id, t.title, mi.info AS original_runtime, ml.linked_movie_id AS sequel_id, t2.title AS sequel_title, mi2.info AS sequel_runtime, ml.link_type_id
+  dbGetQuery("SELECT ml.movie_id, t.title, mi.info AS original_runtime, ml.linked_movie_id AS sequel_id, t2.title AS sequel_title, mi2.info AS sequel_runtime, ml.link_type_id, t.production_year AS original_year, t2.production_year AS sequel_year
 FROM movie_link ml
 JOIN title t ON t.id = ml.movie_id
 JOIN title t2 ON t2.id = linked_movie_id
-JOIN title t3 ON t3.id = ml.movie_id
 JOIN movie_info mi ON mi.movie_id = ml.movie_id
 JOIN movie_info mi2 ON mi2.movie_id = ml.linked_movie_id
 WHERE ml.link_type_id IN (2, 4, 12)
@@ -34,14 +33,9 @@ WHERE ml.link_type_id IN (2, 4, 12)
   AND mi2.info > 89;
 ")
 ```
-
+Then, we retrieved the box-office gross for all movies (this is a separate query, as it involved text cleaning due to the inconsistent format of the data in the database)
 ```{r}
-#gets year of movies
-year <- db %>%
-  dbGetQuery('SELECT id, production_year
-              FROM title;')
-
-#gets gross of movies
+#gets gross of movies (max cumulative gross in USA only, due to constraints w/ format of data)
 gross <- db %>% 
   dbGetQuery('SELECT mi.movie_id, mi.info AS gross
              FROM movie_info mi
@@ -55,14 +49,10 @@ gross <- db %>%
   group_by(movie_id) %>% 
   summarize(max_gross = max(gross)) %>% 
   arrange(desc(max_gross))
-
-#joins sequels w/ years
-sequel_info <- sequel_info %>% 
-  left_join(year, by = c('movie_id' = 'id')) %>% 
-  rename(original_year = production_year) %>% 
-  left_join(year, by = c('sequel_id' = 'id')) %>% 
-  rename(sequel_year = production_year)
-
+```
+Next, we filtered so our data only contained original movies in the title column, added a decade column, joined the gross tbl, and removed duplicate/alternate versions.
+Finally, we created a function to find the top 10 grossing original movies with sequels/remakes/spinoffs for each decade in order to prepare the data for our visualization.
+```{r, message = FALSE, warning = FALSE}
 #filters for duplicates (so only original movie shows up, w/ sequels linking to it)
 #adds decade column
 sequel_info <- sequel_info %>% 
@@ -95,17 +85,8 @@ pop_seq <- sequel_info %>%
   mutate(link_type_id = factor(link_type_id))
 
 ```
-
-
 For our graphic below, we found the the top ten grossing movies per decade, and joined with the movie_link data to see if they had follow up films. Our movies are grouped by the decade of the original movies' release dates, which is indicated by the black dot at the start of each line segment. The seqential dots on the line segments represent the follow up movies, which are color coded by whether they are a sequel, remake, or spinoff. 
 ```{r, fig.height=15, fig.width=20}
-#More ideas: plot time between sequels for movies in each decade, plot number of sequels based on decade?
-#Plot sequel gross and movie gross over time?
-#Plot ratio of sequels/total movies over time? (could need more SQL queries idk)
-#Idk whatevers cool
-
-#Figure out how to add a legend (ggplot is stupid)
-#Black circle is original movie, white circle is sequel, white square is remake, white triangle is spinoff
 ggplot(pop_seq, aes(x = original_year, y = title)) +
   geom_segment(aes(xend = sequel_year, yend = title), size = 2) +
   geom_point(size = 3) +
@@ -129,3 +110,4 @@ When creating the graphic, we assumed that movies released more recently would n
 
 Another possible explanation for the increasing frequency of sequels could be the increased popularization of adaptations of books to movies. The 2000s is when we find adaptations of Harry Potter, Lord of the Rings, The Chronicles of Narnia, and the Hunger Games, all of which are series. So these multiple, consecutive sequels aren't necessarily due to a lack of creativity, but because each book in a series gets to have it's own movie. This is also sensible on the producers' parts, because if an entire book series were put into one singular movie, they would have to chose between detail or length, and they would lose potential money by not having the audience pay to see separate movies.
 
+Github repository: https://github.com/sophieml/sds192-mp3
